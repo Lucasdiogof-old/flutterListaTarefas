@@ -15,7 +15,15 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  List _toDoList = ["Teste1", "Teste2"];
+  List _lista = [];
+
+  final _controlador = TextEditingController();
+
+  void _addList() {
+
+    Map<String, dynamic> registros = new Map();
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +41,7 @@ class _HomeState extends State<Home> {
               children: <Widget>[
                 Expanded(
                     child: TextField(
+                      controller: _controlador,
                   decoration: InputDecoration(
                       labelText: "Nova Tarefa",
                       labelStyle: TextStyle(color: Colors.black)),
@@ -49,10 +58,15 @@ class _HomeState extends State<Home> {
           Expanded(
             child: ListView.builder(
                 padding: EdgeInsets.only(top: 10.0),
-                itemCount: _toDoList.length,
+                itemCount: _lista.length,
                 itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(_toDoList[index]),
+                  return CheckboxListTile(
+                    title: Text(_lista[index]["title"]),
+                    value: _lista[index]["ok"],
+                    secondary: CircleAvatar(
+                      child: Icon(
+                          _lista[index]["ok"] ? Icons.check : Icons.error),
+                    ),
                   );
                 }),
           ),
@@ -68,7 +82,7 @@ class _HomeState extends State<Home> {
 
   Future<File> _saveData() async {
     //Pegando a lista, transformando em json e armazenando em uma string
-    String data = json.encode(_toDoList);
+    String data = json.encode(_lista);
     final file = await _getFile();
     return file.writeAsString(data);
   }
