@@ -20,9 +20,13 @@ class _HomeState extends State<Home> {
   final _controlador = TextEditingController();
 
   void _addList() {
-
-    Map<String, dynamic> registros = new Map();
-
+    setState(() {
+      Map<String, dynamic> registro = new Map();
+      registro["title"] = _controlador.text;
+      _controlador.text = "";
+      registro["ok"] = false;
+      _lista.add(registro);
+    });
   }
 
   @override
@@ -41,7 +45,7 @@ class _HomeState extends State<Home> {
               children: <Widget>[
                 Expanded(
                     child: TextField(
-                      controller: _controlador,
+                  controller: _controlador,
                   decoration: InputDecoration(
                       labelText: "Nova Tarefa",
                       labelStyle: TextStyle(color: Colors.black)),
@@ -50,7 +54,7 @@ class _HomeState extends State<Home> {
                   color: Colors.black,
                   child: Text("ADD"),
                   textColor: Colors.white,
-                  onPressed: () {},
+                  onPressed: _addList,
                 )
               ],
             ),
@@ -64,9 +68,14 @@ class _HomeState extends State<Home> {
                     title: Text(_lista[index]["title"]),
                     value: _lista[index]["ok"],
                     secondary: CircleAvatar(
-                      child: Icon(
-                          _lista[index]["ok"] ? Icons.check : Icons.error),
+                      child:
+                          Icon(_lista[index]["ok"] ? Icons.check : Icons.error),
                     ),
+                    onChanged: (c) {
+                      setState(() {
+                        _lista[index]["ok"] = c;
+                      });
+                    },
                   );
                 }),
           ),
