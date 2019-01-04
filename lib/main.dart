@@ -15,9 +15,22 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  final _controlador = TextEditingController();
+
   List _lista = [];
 
-  final _controlador = TextEditingController();
+  Map<String, dynamic> _lastRemoved; //ultimo item removido
+  int _lastRemovedPos; //posicao do ultimo item removido
+
+  @override
+  void initState() {
+    super.initState();
+    _readData().then((data) {
+      setState(() {
+        _lista = json.decode(data);
+      });
+    });
+  }
 
   void _addList() {
     setState(() {
@@ -26,7 +39,26 @@ class _HomeState extends State<Home> {
       _controlador.text = "";
       registro["ok"] = false;
       _lista.add(registro);
+      _saveData();
     });
+  }
+
+  Future<num> _refresh() async {
+    await Future.delayed(Duration(seconds: 1));
+setState(() {
+  _lista.sort((a, b) {
+    if (a["ok"] && !b["ok"])
+      return 1;
+    else if (!a["ok"] && b["ok"])
+      return -1;
+    else
+      return 0;
+  });
+
+  _saveData();
+});
+
+return null;
   }
 
   @override
@@ -60,27 +92,69 @@ class _HomeState extends State<Home> {
             ),
           ),
           Expanded(
+              child: RefreshIndicator(
+            onRefresh: _refresh,
             child: ListView.builder(
                 padding: EdgeInsets.only(top: 10.0),
                 itemCount: _lista.length,
-                itemBuilder: (context, index) {
-                  return CheckboxListTile(
-                    title: Text(_lista[index]["title"]),
-                    value: _lista[index]["ok"],
-                    secondary: CircleAvatar(
-                      child:
-                          Icon(_lista[index]["ok"] ? Icons.check : Icons.error),
-                    ),
-                    onChanged: (c) {
-                      setState(() {
-                        _lista[index]["ok"] = c;
-                      });
-                    },
-                  );
-                }),
-          ),
+                itemBuilder: buildItem),
+          )),
         ],
       ),
+    );
+  }
+
+  Widget buildItem(BuildContext context, int index) {
+    //Dismissible = widget que permite que ao arrastar, deleta o item
+    return Dismissible(
+      //pra tornar o item único
+      key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
+      background: Container(
+        color: Colors.red,
+        child: Align(
+          alignment: Alignment(-0.9, 0.0),
+          child: Icon(
+            Icons.delete,
+            color: Colors.white,
+          ),
+        ),
+      ),
+      direction: DismissDirection.startToEnd,
+      child: CheckboxListTile(
+        title: Text(_lista[index]["title"]),
+        value: _lista[index]["ok"],
+        secondary: CircleAvatar(
+          child: Icon(_lista[index]["ok"] ? Icons.check : Icons.error),
+        ),
+        onChanged: (c) {
+          setState(() {
+            _lista[index]["ok"] = c;
+            _saveData();
+          });
+        },
+      ),
+      onDismissed: (direction) {
+        setState(() {
+          _lastRemoved = Map.from(_lista[index]);
+          _lastRemovedPos = index;
+          _lista.removeAt(index);
+
+          _saveData();
+
+          final snack = SnackBar(
+            content: Text("Tarefa ${_lastRemoved["title"]} removida"),
+            action: SnackBarAction(
+                label: "Desfazer",
+                onPressed: () {
+                  _lista.insert(_lastRemovedPos, _lastRemoved);
+                  _saveData();
+                }),
+            duration: Duration(seconds: 3),
+          );
+
+          Scaffold.of(context).showSnackBar(snack);
+        });
+      },
     );
   }
 
