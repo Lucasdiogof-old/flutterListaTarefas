@@ -146,8 +146,10 @@ return null;
             action: SnackBarAction(
                 label: "Desfazer",
                 onPressed: () {
-                  _lista.insert(_lastRemovedPos, _lastRemoved);
-                  _saveData();
+                  setState(() {
+                    _lista.insert(_lastRemovedPos, _lastRemoved);
+                    _saveData();
+                  });
                 }),
             duration: Duration(seconds: 3),
           );
