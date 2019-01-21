@@ -84,7 +84,7 @@ return null;
                 )),
                 RaisedButton(
                   color: Colors.black,
-                  child: Text("ADD"),
+                  child: Text("Add"),
                   textColor: Colors.white,
                   onPressed: _addList,
                 )
@@ -166,7 +166,7 @@ return null;
   }
 
   Future<File> _saveData() async {
-    //Pegando a lista, transformando em json e armazenando em uma string
+    //Pegando a lista, transformando em json e armazenando em uma string 
     String data = json.encode(_lista);
     final file = await _getFile();
     return file.writeAsString(data);
